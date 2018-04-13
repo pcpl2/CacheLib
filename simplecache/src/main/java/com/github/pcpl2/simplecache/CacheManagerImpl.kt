@@ -15,8 +15,6 @@ import java.lang.reflect.Type
  * Created by patry on 29.01.2018.
  */
 class CacheManagerImpl {
-    data class CacheEntry(val ts: DateTime, val value: Any, val type: String)
-
     internal class JodaDateTimeTypeAdapter : JsonSerializer<DateTime>, JsonDeserializer<DateTime> {
         @Throws(JsonParseException::class)
         override fun deserialize(json: JsonElement, typeOfT: Type,
@@ -51,18 +49,24 @@ class CacheManagerImpl {
         readCacheFile()
     }
 
-    fun <T> addCache(key: String, value: Any) {
+    fun addToCache(key: String, value: Any) {
         backgroundSaveFileThread?.join()
-        val cacheEntry = CacheEntry(ts = DateTime.now(), value = value, type = (value.javaClass.toString()) )
+        val cacheEntry = CacheEntry(ts = DateTime.now(), value = value, type = value.javaClass.name)
         cahceMap[key] = cacheEntry
         updateCacheFile()
     }
 
-/*    fun <T> getFromCache(key: String, callback: CachceManagerGetData) {
+    fun getFromCache(key: String, checkExpired: Boolean = true, callback: (value: Any?, type: Class<*>?) -> Unit) {
         backgroundReadFileThread?.join()
-        //checkDateOfCache(serviceId = key)
-        callback.onComplete(cahceMap[key]!! as T)
-    }*/
+        if (checkExpired) {
+            checkDateOfCache(key = key)
+        }
+        if (cahceMap.containsKey(key)) {
+            val classType = Class.forName(cahceMap[key]!!.type)
+            val valueTyped = classType.cast(cahceMap[key]?.value)
+            callback(valueTyped, classType)
+        }
+    }
 
     private fun updateCacheFile() {
         backgroundSaveFileThread?.join()
@@ -88,23 +92,24 @@ class CacheManagerImpl {
                 val fr = FileReader(file.absoluteFile)
                 val json = BufferedReader(fr).readLine()
                 fr.close()
-                val cacheEntryType = object : TypeToken<Map<String, CacheEntry>>() {}.type
-                val obj = gson.fromJson<Map<String, CacheEntry>>(json, cacheEntryType)
-                cahceMap.clear()
-                cahceMap.putAll(obj)
+                if(!json.isNullOrEmpty()) {
+                    val cacheEntryType = object : TypeToken<Map<String, CacheEntry>>() {}.type
+                    val obj = gson.fromJson<Map<String, CacheEntry>>(json, cacheEntryType)
+                    cahceMap.clear()
+                    cahceMap.putAll(obj)
+                }
             }
         })
         backgroundReadFileThread?.start()
     }
 
-    /*
-    private fun checkDateOfCache(serviceId: String) {
-        if (cahceMap.contains(serviceId)) {
-            val hours = Hours.hoursBetween(cahceMap[serviceId]?.ts, DateTime.now())
+    private fun checkDateOfCache(key: String) {
+        if (cahceMap.contains(key)) {
+            val hours = Hours.hoursBetween(cahceMap[key]?.ts, DateTime.now())
             if (hours.hours >= 24) {
-                cahceMap.remove(serviceId)
+                cahceMap.remove(key)
                 updateCacheFile()
             }
         }
-    }*/
+    }
 }
