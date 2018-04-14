@@ -6,7 +6,7 @@ import android.util.Log
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import org.joda.time.DateTime
-import org.joda.time.Hours
+import org.joda.time.Seconds
 import org.joda.time.format.ISODateTimeFormat
 import java.io.*
 import java.lang.reflect.Type
@@ -41,6 +41,13 @@ class CacheManagerImpl {
     private var backgroundSaveFileThread: Thread? = null
     private var backgroundReadFileThread: Thread? = null
 
+
+    /**
+     * Initializing the manager's cache and loading data from the memory
+     *
+     * @param context Application context.
+     * @param fileName Name of cache file in memory.
+     */
     fun init(context: Context, fileName: String?) {
         this.context = context.applicationContext
         if (fileName != null) {
@@ -49,13 +56,27 @@ class CacheManagerImpl {
         readCacheFile()
     }
 
-    fun addToCache(key: String, value: Any) {
+    /**
+     * Add element to cache.
+     *
+     * @param key The key under which the added element will be available.
+     * @param value Element that is added. can be of any type.
+     * @param lifeTime Element lifetime in cache (given in seconds). If it is zero then there is no life time.
+     */
+    fun addToCache(key: String, value: Any, lifeTime: Long = 0) {
         backgroundSaveFileThread?.join()
-        val cacheEntry = CacheEntry(ts = DateTime.now(), value = value, type = value.javaClass.name)
+        val cacheEntry = CacheEntry(ts = DateTime.now(), lifeTime = lifeTime, value = value, type = value.javaClass.name)
         cahceMap[key] = cacheEntry
         updateCacheFile()
     }
 
+    /**
+     * Getting element form cache if exist.
+     *
+     * @param key The key under which the cache element was saved.
+     * @param checkExpired Checking if the lifetime of the element has been exceeded.
+     * @param callback Callback returning element and element type from cache. If it does not exist, the element and type returned are null.
+     */
     fun getFromCache(key: String, checkExpired: Boolean = true, callback: (value: Any?, type: Class<*>?) -> Unit) {
         backgroundReadFileThread?.join()
         if (checkExpired) {
@@ -65,6 +86,19 @@ class CacheManagerImpl {
             val classType = Class.forName(cahceMap[key]!!.type)
             val valueTyped = classType.cast(cahceMap[key]?.value)
             callback(valueTyped, classType)
+        }
+    }
+
+    /**
+     * Removing element from cache if exist.
+     *
+     * @param key The key under which the cache element was saved.
+     */
+    fun removeFomCache(key: String) {
+        backgroundReadFileThread?.join()
+        if(cahceMap.containsKey(key = key)) {
+            cahceMap.remove(key)
+            updateCacheFile()
         }
     }
 
@@ -92,7 +126,7 @@ class CacheManagerImpl {
                 val fr = FileReader(file.absoluteFile)
                 val json = BufferedReader(fr).readLine()
                 fr.close()
-                if(!json.isNullOrEmpty()) {
+                if (!json.isNullOrEmpty()) {
                     val cacheEntryType = object : TypeToken<Map<String, CacheEntry>>() {}.type
                     val obj = gson.fromJson<Map<String, CacheEntry>>(json, cacheEntryType)
                     cahceMap.clear()
@@ -105,10 +139,13 @@ class CacheManagerImpl {
 
     private fun checkDateOfCache(key: String) {
         if (cahceMap.contains(key)) {
-            val hours = Hours.hoursBetween(cahceMap[key]?.ts, DateTime.now())
-            if (hours.hours >= 24) {
-                cahceMap.remove(key)
-                updateCacheFile()
+            val element = cahceMap[key]!!
+            if(element.lifeTime > 0) {
+                val hours = Seconds.secondsBetween(element.ts, DateTime.now())
+                if (hours.seconds >= element.lifeTime) {
+                    cahceMap.remove(key)
+                    updateCacheFile()
+                }
             }
         }
     }
