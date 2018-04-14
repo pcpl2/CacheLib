@@ -63,7 +63,7 @@ class CacheManagerImpl {
      * @param value Element that is added. can be of any type.
      * @param lifeTime Element lifetime in cache (given in seconds). If it is zero then there is no life time.
      */
-    fun addToCache(key: String, value: Any, lifeTime: Long = 0) {
+    fun add(key: String, value: Any, lifeTime: Long = 0) {
         backgroundSaveFileThread?.join()
         val cacheEntry = CacheEntry(ts = DateTime.now(), lifeTime = lifeTime, value = value, type = value.javaClass.name)
         cahceMap[key] = cacheEntry
@@ -77,7 +77,7 @@ class CacheManagerImpl {
      * @param checkExpired Checking if the lifetime of the element has been exceeded.
      * @param callback Callback returning element and element type from cache. If it does not exist, the element and type returned are null.
      */
-    fun getFromCache(key: String, checkExpired: Boolean = true, callback: (value: Any?, type: Class<*>?) -> Unit) {
+    fun get(key: String, checkExpired: Boolean = true, callback: (value: Any?, type: Class<*>?) -> Unit) {
         backgroundReadFileThread?.join()
         if (checkExpired) {
             checkDateOfCache(key = key)
@@ -94,7 +94,7 @@ class CacheManagerImpl {
      *
      * @param key The key under which the cache element was saved.
      */
-    fun removeFomCache(key: String) {
+    fun remove(key: String) {
         backgroundReadFileThread?.join()
         if(cahceMap.containsKey(key = key)) {
             cahceMap.remove(key)
