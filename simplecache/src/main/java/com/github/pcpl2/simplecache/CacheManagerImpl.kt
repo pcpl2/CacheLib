@@ -30,7 +30,7 @@ class CacheManagerImpl {
         }
     }
 
-    private var context: Context? = null
+    private lateinit var context: Context
 
     private var filename = "CacheBase"
 
@@ -49,7 +49,7 @@ class CacheManagerImpl {
      * @param fileName Name of cache file in memory.
      */
     fun init(context: Context, fileName: String?) {
-        this.context = context.applicationContext
+        this.context = context
         if (fileName != null) {
             this.filename = fileName
         }
@@ -102,6 +102,9 @@ class CacheManagerImpl {
         }
     }
 
+    /**
+     * Removing all elements form cache.
+     */
     private fun removeAllElements() {
         backgroundReadFileThread?.join()
         cahceMap.clear()
@@ -114,7 +117,7 @@ class CacheManagerImpl {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
             val json = gson.toJson(cahceMap)
             Log.d("SaveJson", json)
-            val file = File(context?.cacheDir, filename)
+            val file = File(context.cacheDir, "${CacheManager.directoryName}${File.separator}$filename")
             val fw = FileWriter(file.absoluteFile)
             val bw = BufferedWriter(fw)
             bw.write(json)
@@ -127,7 +130,7 @@ class CacheManagerImpl {
         backgroundReadFileThread?.join()
         backgroundReadFileThread = Thread(Runnable {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
-            val file = File(context?.cacheDir, filename)
+            val file = File(context.cacheDir, "${CacheManager.directoryName}${File.separator}$filename")
             if (file.exists()) {
                 val fr = FileReader(file.absoluteFile)
                 val json = BufferedReader(fr).readLine()
