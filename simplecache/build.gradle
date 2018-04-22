@@ -27,6 +27,30 @@ android {
     }
 }
 
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'simplecache'
+
+    publishedGroupId = 'com.github.pcpl2'
+    libraryName = 'SimpleCache'
+    artifact = 'simplecache'
+
+    libraryDescription = 'A simple library for saving data in the cache and reading them.'
+
+    siteUrl = 'https://github.com/pcpl2/CacheLib'
+    gitUrl = 'https://github.com/pcpl2/CacheLib.git'
+
+    libraryVersion = '1.0.0'
+
+    developerId = 'pcpl2'
+    developerName = 'Patryk Ławicki'
+    developerEmail = 'patryykk12@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -38,6 +62,10 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
+
 repositories {
     mavenCentral()
 }
+
+apply from: '../installv1.gradle'
+apply from: '../bintrayv1.gradle'
