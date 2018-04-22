@@ -10,4 +10,9 @@ object CacheManager {
         val directory = File(ctx.cacheDir, directoryName)
         return directory.listFiles().map { it.name }
     }
+
+    fun createInstance(context: Context, fileName: String?): CacheManagerImpl {
+        return CacheManagerImpl(context, fileName)
+    }
+
 }

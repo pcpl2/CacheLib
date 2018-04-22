@@ -24,8 +24,7 @@ class ExampleInstrumentedTest {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getTargetContext()
 
-        val cacheManager = CacheManagerImpl()
-        cacheManager.init(appContext, null)
+        val cacheManager = CacheManager.createInstance(appContext, null)
 
         cacheManager.add("String", "Hello World")
         cacheManager.add("Int", 255)

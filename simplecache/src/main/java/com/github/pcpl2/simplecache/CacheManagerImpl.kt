@@ -14,7 +14,7 @@ import java.lang.reflect.Type
 /**
  * Created by patry on 29.01.2018.
  */
-class CacheManagerImpl {
+class CacheManagerImpl(private val context: Context, fileName: String?) {
     internal class JodaDateTimeTypeAdapter : JsonSerializer<DateTime>, JsonDeserializer<DateTime> {
         @Throws(JsonParseException::class)
         override fun deserialize(json: JsonElement, typeOfT: Type,
@@ -30,9 +30,7 @@ class CacheManagerImpl {
         }
     }
 
-    private lateinit var context: Context
-
-    private var filename = "CacheBase"
+    private var filename = fileName ?: "CacheBase"
 
     private val gson = GsonBuilder().registerTypeAdapter(DateTime::class.java, JodaDateTimeTypeAdapter()).create()
 
@@ -42,17 +40,7 @@ class CacheManagerImpl {
     private var backgroundReadFileThread: Thread? = null
 
 
-    /**
-     * Initializing the manager's cache and loading data from the memory
-     *
-     * @param context Application context.
-     * @param fileName Name of cache file in memory.
-     */
-    fun init(context: Context, fileName: String?) {
-        this.context = context
-        if (fileName != null) {
-            this.filename = fileName
-        }
+    init {
         createDirectory()
         readCacheFile()
     }
