@@ -102,6 +102,12 @@ class CacheManagerImpl {
         }
     }
 
+    private fun removeAllElements() {
+        backgroundReadFileThread?.join()
+        cahceMap.clear()
+        updateCacheFile()
+    }
+
     private fun updateCacheFile() {
         backgroundSaveFileThread?.join()
         backgroundSaveFileThread = Thread(Runnable {
