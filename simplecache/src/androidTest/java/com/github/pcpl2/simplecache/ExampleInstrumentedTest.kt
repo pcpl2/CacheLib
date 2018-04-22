@@ -81,6 +81,8 @@ class ExampleInstrumentedTest {
             System.out.println(value.toString())
         }
 
+        System.out.println(CacheManager.getListOfCacheFiles(appContext).toString())
+
         assertEquals("com.github.pcpl2.simplecache.test", appContext.packageName)
     }
 }

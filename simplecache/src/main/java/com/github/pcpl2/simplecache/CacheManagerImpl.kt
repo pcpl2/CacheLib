@@ -53,6 +53,7 @@ class CacheManagerImpl {
         if (fileName != null) {
             this.filename = fileName
         }
+        createDirectory()
         readCacheFile()
     }
 
@@ -157,5 +158,9 @@ class CacheManagerImpl {
                 }
             }
         }
+    }
+
+    private fun createDirectory() {
+        File(context.cacheDir, CacheManager.directoryName).mkdirs()
     }
 }
