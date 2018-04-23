@@ -1,4 +1,4 @@
-package com.github.pcpl2.simplecache
+package com.github.pcpl2.simplecache.models
 
 import org.joda.time.DateTime
 

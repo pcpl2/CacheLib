@@ -3,6 +3,7 @@ package com.github.pcpl2.simplecache
 import android.os.Process
 import android.content.Context
 import android.util.Log
+import com.github.pcpl2.simplecache.models.CacheEntry
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import org.joda.time.DateTime
@@ -68,13 +69,20 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
      */
     fun get(key: String, checkExpired: Boolean = true, callback: (value: Any?, type: Class<*>?) -> Unit) {
         backgroundReadFileThread?.join()
-        if (checkExpired) {
-            checkDateOfCache(key = key)
-        }
-        if (cahceMap.containsKey(key)) {
-            val classType = Class.forName(cahceMap[key]!!.type)
-            val valueTyped = classType.cast(cahceMap[key]?.value)
-            callback(valueTyped, classType)
+
+        val entry = cahceMap[key]
+
+        if (entry != null) {
+            val classType = Class.forName(entry.type)
+            val valueTyped = classType.cast(entry.value)
+            if (checkExpired) {
+                val removed = checkDateOfCache(key = key, entry = entry)
+                if (!removed) {
+                    callback(valueTyped, classType)
+                }
+            } else {
+                callback(valueTyped, classType)
+            }
         }
     }
 
@@ -85,7 +93,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
      */
     fun remove(key: String) {
         backgroundReadFileThread?.join()
-        if(cahceMap.containsKey(key = key)) {
+        if (cahceMap.containsKey(key = key)) {
             cahceMap.remove(key)
             updateCacheFile()
         }
@@ -135,16 +143,28 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
         backgroundReadFileThread?.start()
     }
 
-    private fun checkDateOfCache(key: String) {
-        if (cahceMap.contains(key)) {
-            val element = cahceMap[key]!!
-            if(element.lifeTime > 0) {
-                val hours = Seconds.secondsBetween(element.ts, DateTime.now())
-                if (hours.seconds >= element.lifeTime) {
-                    cahceMap.remove(key)
-                    updateCacheFile()
-                }
+    /**
+     * Check and remove element from map if lifetime is end.
+     *
+     * @param key key of element in map.
+     * @param entry entry element from map.
+     *
+     * @return boolean of is removed or not. Return true if removed from map.
+     */
+    private fun checkDateOfCache(key: String, entry: CacheEntry): Boolean {
+        backgroundSaveFileThread?.join()
+
+        return if (entry.lifeTime > 0) {
+            val hours = Seconds.secondsBetween(entry.ts, DateTime.now())
+            if (hours.seconds >= entry.lifeTime) {
+                cahceMap.remove(key)
+                updateCacheFile()
+                true
+            } else {
+                false
             }
+        } else {
+            false
         }
     }
 
