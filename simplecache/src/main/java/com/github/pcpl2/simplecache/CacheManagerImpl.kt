@@ -65,9 +65,10 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
      *
      * @param key The key under which the cache element was saved.
      * @param checkExpired Checking if the lifetime of the element has been exceeded.
-     * @param callback Callback returning element and element type from cache. If it does not exist, the element and type returned are null.
+     * @param success Callback returning element and element type from cache. If it does not exist, the element and type returned are null.
+     * @param error Callback running if element with key not exist in map or lifetime of element is end.
      */
-    fun get(key: String, checkExpired: Boolean = true, callback: (value: Any?, type: Class<*>?) -> Unit) {
+    fun get(key: String, checkExpired: Boolean = true, success: (value: Any?, type: Class<*>?) -> Unit, error: (() -> Unit)? = null) {
         backgroundReadFileThread?.join()
 
         val entry = cahceMap[key]
@@ -78,10 +79,18 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
             if (checkExpired) {
                 val removed = checkDateOfCache(key = key, entry = entry)
                 if (!removed) {
-                    callback(valueTyped, classType)
+                    success(valueTyped, classType)
+                } else {
+                    if(error != null) {
+                        error()
+                    }
                 }
             } else {
-                callback(valueTyped, classType)
+                success(valueTyped, classType)
+            }
+        } else {
+            if(error != null) {
+                error()
             }
         }
     }
