@@ -10,7 +10,7 @@ The library is hosted on jcenter. To use it, add the following to your module le
 
 ```gradle
 dependencies {
-    implementation 'com.github.pcpl2:simplecache:1.0.0'
+    implementation 'com.github.pcpl2:simplecache:1.1.0'
 }
 ```
 
@@ -31,74 +31,84 @@ val cacheManager = CacheManager.createInstance(appContext, "filesCache")
 The `cacheManager` instance usage cache with file name `filesCache`.
 
 
-## Add elements to cache: 
-The `add` function accepts 3 parameters: `key: Stirng, value: Any, lifetime: Long`.
+## Add or update elements to cache: 
+The `set` function accepts 3 parameters: `key: Stirng, value: Any, lifetime: Long`.
 
 The lifetime parameter is the lifetime in seconds and is optional, default setted to 0 (no lifetime).
 
-**To add element to cache instance with set lifetime:**
+**To add or update element to cache instance with set lifetime:**
 
 ```kotlin
-cacheManager.add("HelloWorldKey", "Hello World", 60)
-cacheManager.add("IntValueKey", 255, 30)
-cacheManager.add("BooleanKey", false, 60)
-cacheManager.add("FloatKey", 5.55, 60)
+cacheManager.set("HelloWorldKey", "Hello World", 60)
+cacheManager.set("IntValueKey", 255, 30)
+cacheManager.set("BooleanKey", false, 60)
+cacheManager.set("FloatKey", 5.55, 60)
 ```
 
-**To add element to cache instance without set lifetime:**
+**To add or update element to cache instance without set lifetime:**
 
 ```kotlin
-cacheManager.add("HelloWorldKey", "Hello World")
-cacheManager.add("IntValueKey", 255)
-cacheManager.add("BooleanKey", false)
-cacheManager.add("FloatKey", 5.55)
+cacheManager.set("HelloWorldKey", "Hello World")
+cacheManager.set("IntValueKey", 255)
+cacheManager.set("BooleanKey", false)
+cacheManager.set("FloatKey", 5.55)
 ```
 
 ## Getting element from cache: 
-The `get` function accepts 3 parameters: `key: Stirng, checkExpired: Any, callback:  (value: Any?, type: Class<*>?) -> Unit`.
+The `get` function accepts 4 parameters: `key: Stirng, checkExpired: Boolean = true, success:  (value: Any, type: Class<*>) -> Unit, error: (() -> Unit)? = null`.
 
 The checkExpired parameter is optional, default setted as true.
 
-In lambda callback `value` is a nullable any object and `type` is a nullable java Class.
+Callback success return value from map and value type.
+
+Callback error is optional and run if element with key not exist or lifetime of element is ended.
 
 **To get element from cache instance with lifetime check:**
 
 ```kotlin
-cacheManager.get("HelloWorldKey") { value, type ->
-    System.out.println(value.toString())
-}
+cacheManager.get(key = "HelloWorldKey", success = { value, type ->
+    Log.d("simpleCacheLog", value.toString())
+})
 
-cacheManager.get("IntValueKey") { value, type ->
-    System.out.println(value.toString())
-}
+cacheManager.get(key = "IntValueKey", success = { value, type ->
+    Log.d("simpleCacheLog", value.toString())
+})
 
-cacheManager.get("BooleanKey") { value, type ->
-    System.out.println(value.toString())
-}
+cacheManager.get(key = "BooleanKey", success = { value, type ->
+   Log.d("simpleCacheLog", value.toString())
+}, error = { 
+    Log.d("simpleCacheLog", "BooleanKey is empty.")
+})
 
-cacheManager.get("FloatKey") { value, type ->
-    System.out.println(value.toString())
-}
+cacheManager.get(key = "FloatKey", success = { value, type ->
+    Log.d("simpleCacheLog", value.toString())
+}, error = { 
+    Log.d("simpleCacheLog", "FloatKey is empty.")
+})
 ```
 
 **To get element from cache instance without lifetime check:**
 
 ```kotlin
-cacheManager.get("HelloWorldKey", false) { value, type ->
-    System.out.println(value.toString())
-}
+cacheManager.get(key = "HelloWorldKey", checkExpired = false, success = { value, type ->
+    Log.d("simpleCacheLog", value.toString())
+})
 
-cacheManager.get("IntValueKey", false) { value, type ->
-    System.out.println(value.toString())
-}
+cacheManager.get(key = "IntValueKey", checkExpired = false, success = { value, type ->
+    Log.d("simpleCacheLog", value.toString())
+})
 
-cacheManager.get("BooleanKey", false) { value, type ->
-   System.out.println(value.toString())
-}
+cacheManager.get(key = "BooleanKey", checkExpired = false, success = { value, type ->
+   Log.d("simpleCacheLog", value.toString())
+}, error = { 
+    Log.d("simpleCacheLog", "BooleanKey is empty.")
+})
 
-cacheManager.get("FloatKey", false) { value, type ->
-    System.out.println(value.toString())
-}
+cacheManager.get(key = "FloatKey", checkExpired = false, success = { value, type ->
+    Log.d("simpleCacheLog", value.toString())
+}, error = { 
+    Log.d("simpleCacheLog", "FloatKey is empty.")
+})
 ```
 
 ## Remove element from cache
@@ -113,7 +123,7 @@ cacheManager.remove("FloatKey")
 ## Clear cache instance
 The `removeAllElements` function cleans the entire cache.
 
-**To clear cachce istance:**
+**To clear cahce istance:**
 
 ```kotlin
 cacheManager.removeAllElements()
