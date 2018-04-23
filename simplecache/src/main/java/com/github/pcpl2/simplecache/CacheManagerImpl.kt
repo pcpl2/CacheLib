@@ -47,13 +47,13 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
     }
 
     /**
-     * Add element to cache.
+     * Add or update element in cache.
      *
      * @param key The key under which the added element will be available.
      * @param value Element that is added. can be of any type.
      * @param lifeTime Element lifetime in cache (given in seconds). If it is zero then there is no life time.
      */
-    fun add(key: String, value: Any, lifeTime: Long = 0) {
+    fun set(key: String, value: Any, lifeTime: Long = 0) {
         backgroundSaveFileThread?.join()
         val cacheEntry = CacheEntry(ts = DateTime.now(), lifeTime = lifeTime, value = value, type = value.javaClass.name)
         cahceMap[key] = cacheEntry
@@ -68,11 +68,10 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
      * @param success Callback returning element and element type from cache. If it does not exist, the element and type returned are null.
      * @param error Callback running if element with key not exist in map or lifetime of element is end.
      */
-    fun get(key: String, checkExpired: Boolean = true, success: (value: Any?, type: Class<*>?) -> Unit, error: (() -> Unit)? = null) {
+    fun get(key: String, checkExpired: Boolean = true, success: (value: Any, type: Class<*>) -> Unit, error: (() -> Unit)? = null) {
         backgroundReadFileThread?.join()
 
         val entry = cahceMap[key]
-
         if (entry != null) {
             val classType = Class.forName(entry.type)
             val valueTyped = classType.cast(entry.value)
@@ -121,8 +120,8 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
         backgroundSaveFileThread?.join()
         backgroundSaveFileThread = Thread(Runnable {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
-            val json = gson.toJson(cahceMap)
-            Log.d("SaveJson", json)
+            val json = gson.toJson(cahceMap.toMap())
+            //Log.d("SaveJson", json)
             val file = File(context.cacheDir, "${CacheManager.directoryName}${File.separator}$filename")
             val fw = FileWriter(file.absoluteFile)
             val bw = BufferedWriter(fw)
