@@ -3,7 +3,7 @@
 [![SimpleCache](https://api.bintray.com/packages/pcpl2/maven/simplecache/images/download.svg) ](https://bintray.com/pcpl2/maven/simplecache/_latestVersion)
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=plastic)](https://android-arsenal.com/api?level=21)
 [![License](https://img.shields.io/:license-apache-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-
+[![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-simplecache-green.svg?style=flat )]( https://android-arsenal.com/details/1/6965 )
 
 A simple library for saving data in the cache and reading them.
 
