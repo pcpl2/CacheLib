@@ -32,6 +32,11 @@ val cacheManager = CacheManager.createInstance(appContext, "filesCache")
 ```
 The `cacheManager` instance usage cache with file name `filesCache`.
 
+**To init instance of cache manager without autosave:**
+```kotlin
+val cacheManager = CacheManager.createInstance(appContext, null, false)
+```
+If you have deactivated the automatic saving, you must remember to save the data using the `save` method.
 
 ## Add or update elements to cache: 
 The `set` function accepts 3 parameters: `key: Stirng, value: Any, lifetime: Long`.
@@ -54,6 +59,12 @@ cacheManager.set("HelloWorldKey", "Hello World")
 cacheManager.set("IntValueKey", 255)
 cacheManager.set("BooleanKey", false)
 cacheManager.set("FloatKey", 5.55)
+```
+## Save cache data 
+**To save cache on disk (if autosave disabled):**
+
+```kotlin
+cacheManager.save()
 ```
 
 ## Getting element from cache: 
