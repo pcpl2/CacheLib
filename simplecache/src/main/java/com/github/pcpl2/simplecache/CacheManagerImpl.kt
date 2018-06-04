@@ -110,7 +110,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
     /**
      * Removing all elements form cache.
      */
-    private fun removeAllElements() {
+    fun removeAllElements() {
         backgroundReadFileThread?.join()
         cahceMap.clear()
         updateCacheFile()
