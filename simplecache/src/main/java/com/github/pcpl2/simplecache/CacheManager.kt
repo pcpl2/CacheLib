@@ -11,8 +11,8 @@ object CacheManager {
         return directory.listFiles().map { it.name }
     }
 
-    fun createInstance(context: Context, fileName: String?): CacheManagerImpl {
-        return CacheManagerImpl(context, fileName)
+    fun createInstance(context: Context, fileName: String?, autoSave: Boolean = true): CacheManagerImpl {
+        return CacheManagerImpl(context, fileName, autoSave)
     }
 
 }

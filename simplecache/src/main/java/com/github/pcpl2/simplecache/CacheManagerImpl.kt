@@ -15,7 +15,7 @@ import java.lang.reflect.Type
 /**
  * Created by patry on 29.01.2018.
  */
-class CacheManagerImpl(private val context: Context, fileName: String?) {
+class CacheManagerImpl(private val context: Context, fileName: String?, private val autoSave: Boolean = true) {
     internal class JodaDateTimeTypeAdapter : JsonSerializer<DateTime>, JsonDeserializer<DateTime> {
         @Throws(JsonParseException::class)
         override fun deserialize(json: JsonElement, typeOfT: Type,
@@ -57,7 +57,8 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
         backgroundSaveFileThread?.join()
         val cacheEntry = CacheEntry(ts = DateTime.now(), lifeTime = lifeTime, value = value, type = value.javaClass.name)
         cahceMap[key] = cacheEntry
-        updateCacheFile()
+        if(autoSave)
+            updateCacheFile()
     }
 
     /**
@@ -103,7 +104,8 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
         backgroundReadFileThread?.join()
         if (cahceMap.containsKey(key = key)) {
             cahceMap.remove(key)
-            updateCacheFile()
+            if(autoSave)
+                updateCacheFile()
         }
     }
 
@@ -113,7 +115,17 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
     fun removeAllElements() {
         backgroundReadFileThread?.join()
         cahceMap.clear()
-        updateCacheFile()
+        if(autoSave)
+            updateCacheFile()
+    }
+
+    /**
+     * Save elements to disk, works only if autosave is false.
+     */
+    fun save() {
+        backgroundReadFileThread?.join()
+        if(!autoSave)
+            updateCacheFile()
     }
 
     /**
@@ -124,7 +136,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
         backgroundSaveFileThread = Thread(Runnable {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
             val json = gson.toJson(cahceMap.toMap())
-            //Log.d("SaveJson", json)
+            Log.d("SaveJson", json)
             val file = File(context.cacheDir, "${CacheManager.directoryName}${File.separator}$filename")
             val fw = FileWriter(file.absoluteFile)
             val bw = BufferedWriter(fw)
@@ -172,7 +184,8 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
             val hours = Seconds.secondsBetween(entry.ts, DateTime.now())
             if (hours.seconds >= entry.lifeTime) {
                 cahceMap.remove(key)
-                updateCacheFile()
+                if(autoSave)
+                    updateCacheFile()
                 true
             } else {
                 false

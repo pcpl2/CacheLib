@@ -19,10 +19,10 @@ import org.junit.Assert.*
  */
 @RunWith(AndroidJUnit4::class)
 class SimpleCacheTest {
+
     @Test
     @Throws(Exception::class)
-    fun simpleCacheTest() {
-
+    fun cacheWithAutoSaveTest() {
         val appContext = InstrumentationRegistry.getTargetContext()
 
         val cacheManager = CacheManager.createInstance(appContext, null)
@@ -34,7 +34,7 @@ class SimpleCacheTest {
         val testMap = HashMap<String, String>()
         testMap["testKey"] = "TestValue"
         cacheManager.set("map", testMap)
-        val testObject = TestObject(69, "abababa", false, 6.66f, testMap)
+        val testObject = TestObject(69, "Test String", false, 6.66f, testMap)
         cacheManager.set("obj", testObject)
         val testObject2 = TestObject(885, "Testing two!", true, 3.14f, testMap)
 
@@ -91,8 +91,90 @@ class SimpleCacheTest {
             assert(true)
         })
 
-        Log.d("simpleCacheTest", CacheManager.getListOfCacheFiles(appContext).toString())
+        cacheManager.removeAllElements()
+    }
 
-        assertEquals("com.github.pcpl2.simplecache.test", appContext.packageName)
+    @Test
+    fun cacheWithoutAutoSaveTest() {
+        val appContext = InstrumentationRegistry.getTargetContext()
+
+        val cacheManager = CacheManager.createInstance(appContext, "NoAutoSave", false)
+
+        cacheManager.set("String", "Hello World")
+        cacheManager.set("Int", 255)
+        cacheManager.set("Bool", false)
+        cacheManager.set("float", 5.55)
+        val testMap = HashMap<String, String>()
+        testMap["testKey"] = "TestValue"
+        cacheManager.set("map", testMap)
+        val testObject = TestObject(69, "Test String", false, 6.66f, testMap)
+        cacheManager.set("obj", testObject)
+        val testObject2 = TestObject(885, "Testing two!", true, 3.14f, testMap)
+
+        cacheManager.set("obj2", testObject2)
+
+        cacheManager.save()
+
+        cacheManager.get(key = "String", success = { value, type ->
+            assertEquals("Hello World", value)
+            assert(type.isInstance(String::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "Int", checkExpired = true, success = { value, type ->
+            assertEquals(255, value)
+            assert(type.isInstance(Int::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "Bool", success = { value, type ->
+            assertEquals(false, value)
+            assert(type.isInstance(Boolean::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "float", success = { value, type ->
+            assertEquals(5.55, value)
+            assert(type.isInstance(Float::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "map", success = { value, type ->
+            assertEquals(testMap, value)
+            assert(type.isInstance(HashMap::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "obj", success = { value, type ->
+            assertEquals(testObject, value)
+            assert(type.isInstance(TestObject::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "obj2", success = { value, type ->
+            assertEquals(testObject2, value)
+            assert(type.isInstance(TestObject::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.remove("obj2")
+
+        cacheManager.get(key = "obj2", success = { _,  _ ->
+
+        }, error = {
+            Log.d("simpleCacheTest", "obj2 is not exist.")
+            assert(true)
+        })
+
+        cacheManager.removeAllElements()
+    }
+
+    @Test
+    fun cacheListFilesTest() {
+        val appContext = InstrumentationRegistry.getTargetContext()
+        val files = CacheManager.getListOfCacheFiles(appContext)
+        Log.d("simpleCacheTest",files.toString())
+
+        assert(files.size == 2)
     }
 }
