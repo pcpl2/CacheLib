@@ -116,6 +116,9 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
         updateCacheFile()
     }
 
+    /**
+     * Update cache data in json file.
+     */
     private fun updateCacheFile() {
         backgroundSaveFileThread?.join()
         backgroundSaveFileThread = Thread(Runnable {
@@ -131,6 +134,9 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
         backgroundSaveFileThread?.start()
     }
 
+    /**
+     * Load cache data from json file.
+     */
     private fun readCacheFile() {
         backgroundReadFileThread?.join()
         backgroundReadFileThread = Thread(Runnable {
@@ -176,6 +182,9 @@ class CacheManagerImpl(private val context: Context, fileName: String?) {
         }
     }
 
+    /**
+     * Create directory for cache json.
+     */
     private fun createDirectory() {
         File(context.cacheDir, CacheManager.directoryName).mkdirs()
     }
