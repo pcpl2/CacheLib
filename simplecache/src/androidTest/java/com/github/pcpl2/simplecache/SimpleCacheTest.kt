@@ -20,10 +20,12 @@ import org.junit.Assert.*
 @RunWith(AndroidJUnit4::class)
 class SimpleCacheTest {
 
+    private val appContext = InstrumentationRegistry.getTargetContext()!!
+
     @Test
     @Throws(Exception::class)
     fun cacheWithAutoSaveTest() {
-        val appContext = InstrumentationRegistry.getTargetContext()
+
 
         val cacheManager = CacheManager.createInstance(appContext, null)
 
@@ -96,7 +98,7 @@ class SimpleCacheTest {
 
     @Test
     fun cacheWithoutAutoSaveTest() {
-        val appContext = InstrumentationRegistry.getTargetContext()
+        //val appContext = InstrumentationRegistry.getTargetContext()
 
         val cacheManager = CacheManager.createInstance(appContext, "NoAutoSave", false)
 
@@ -171,10 +173,42 @@ class SimpleCacheTest {
 
     @Test
     fun cacheListFilesTest() {
-        val appContext = InstrumentationRegistry.getTargetContext()
+        //val appContext = InstrumentationRegistry.getTargetContext()
         val files = CacheManager.getListOfCacheFiles(appContext)
         Log.d("simpleCacheTest",files.toString())
 
         assert(files.size == 2)
+    }
+
+    @Test
+    fun globalInstancesTest() {
+        val instanceName1 = "Instance1"
+        val instanceName2 = "Instance2"
+
+        val instance1 = CacheManager.createGlobalInstance(context = appContext, instanceName = instanceName1, fileName = "instanceFile1")
+        val instance2 = CacheManager.createGlobalInstance(context = appContext, instanceName = instanceName2, fileName = "InstanceFile2")
+
+        val globalInstance1 = CacheManager.getGlobalInstance(instanceName1)
+        val globalInstance2 = CacheManager.getGlobalInstance(instanceName2)
+
+        assert(instance1 == globalInstance1)
+        assert(instance1 != globalInstance2)
+        assert(instance2 == globalInstance2)
+
+        var listOfIInstancesNames = CacheManager.getListOfGlobalInstanceNames()
+
+        assert(listOfIInstancesNames.contains(instanceName2))
+
+        CacheManager.removeGlobalInstance(instanceName1)
+
+        listOfIInstancesNames = CacheManager.getListOfGlobalInstanceNames()
+
+        assert(!listOfIInstancesNames.contains(instanceName1))
+
+        CacheManager.removeAllGlobalInstances()
+
+        listOfIInstancesNames = CacheManager.getListOfGlobalInstanceNames()
+
+        assert(listOfIInstancesNames.isEmpty())
     }
 }
