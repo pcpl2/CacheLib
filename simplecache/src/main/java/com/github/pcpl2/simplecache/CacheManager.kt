@@ -30,7 +30,7 @@ object CacheManager {
      *
      * @return Cache manager instance.
      */
-    fun createGlobalInstance(context: Context, instanceName: String, fileName: String?, autoSave: Boolean = true): CacheManagerImpl {
+    fun createGlobalInstance(context: Context, instanceName: String, fileName: String = "CacheBase", autoSave: Boolean = true): CacheManagerImpl {
         val instance = CacheManagerImpl(context, fileName, autoSave)
 
         instancesActive[instanceName] = instance
@@ -82,7 +82,7 @@ object CacheManager {
      *
      * @return Cache manager instance.
      */
-    fun createInstance(context: Context, fileName: String?, autoSave: Boolean = true): CacheManagerImpl {
+    fun createInstance(context: Context, fileName: String = "CacheBase", autoSave: Boolean = true): CacheManagerImpl {
         return CacheManagerImpl(context, fileName, autoSave)
     }
 

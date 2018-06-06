@@ -21,20 +21,20 @@ dependencies {
 **To init instance of cache manager without filename:**
 
 ```kotlin
-val cacheManager = CacheManager.createInstance(appContext, null) 
+val cacheManager = CacheManager.createInstance(context = appContext)
 ```
 The `cacheManager` instance usage default cache file.
 
 **To init instance of cache manager with filename:**
 
 ```kotlin
-val cacheManager = CacheManager.createInstance(appContext, "filesCache")
+val cacheManager = CacheManager.createInstance(context = appContext, fileName = "filesCache")
 ```
 The `cacheManager` instance usage cache with file name `filesCache`.
 
 **To init instance of cache manager without autosave:**
 ```kotlin
-val cacheManager = CacheManager.createInstance(appContext, null, false)
+val cacheManager = CacheManager.createInstance(context = appContext, autoSave = false)
 ```
 If you have deactivated the automatic saving, you must remember to save the data using the `save` method.
 

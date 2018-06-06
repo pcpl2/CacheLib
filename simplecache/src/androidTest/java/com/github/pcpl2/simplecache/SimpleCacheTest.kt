@@ -27,7 +27,7 @@ class SimpleCacheTest {
     fun cacheWithAutoSaveTest() {
 
 
-        val cacheManager = CacheManager.createInstance(appContext, null)
+        val cacheManager = CacheManager.createInstance(context = appContext)
 
         cacheManager.set("String", "Hello World")
         cacheManager.set("Int", 255)
@@ -98,8 +98,6 @@ class SimpleCacheTest {
 
     @Test
     fun cacheWithoutAutoSaveTest() {
-        //val appContext = InstrumentationRegistry.getTargetContext()
-
         val cacheManager = CacheManager.createInstance(appContext, "NoAutoSave", false)
 
         cacheManager.set("String", "Hello World")
@@ -173,7 +171,6 @@ class SimpleCacheTest {
 
     @Test
     fun cacheListFilesTest() {
-        //val appContext = InstrumentationRegistry.getTargetContext()
         val files = CacheManager.getListOfCacheFiles(appContext)
         Log.d("simpleCacheTest",files.toString())
 

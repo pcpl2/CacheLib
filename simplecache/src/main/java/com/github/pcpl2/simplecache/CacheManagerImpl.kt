@@ -17,7 +17,7 @@ import com.google.gson.JsonElement
 /**
  * Created by patry on 29.01.2018.
  */
-class CacheManagerImpl(private val context: Context, fileName: String?, private val autoSave: Boolean = true) {
+class CacheManagerImpl(private val context: Context, private val fileName: String, private val autoSave: Boolean) {
     internal class JodaDateTimeTypeAdapter : JsonSerializer<DateTime>, JsonDeserializer<DateTime> {
         @Throws(JsonParseException::class)
         override fun deserialize(json: JsonElement, typeOfT: Type,
@@ -53,8 +53,6 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
         }
 
     }
-
-    private var filename = fileName ?: "CacheBase"
 
     private val gson = GsonBuilder()
             .registerTypeAdapter(DateTime::class.java, JodaDateTimeTypeAdapter())
@@ -163,7 +161,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
             val json = gson.toJson(cacheMap.toMap())
             //Log.d("SaveJson", json)
-            val file = File(context.cacheDir, "${CacheManager.directoryName}${File.separator}$filename")
+            val file = File(context.cacheDir, "${CacheManager.directoryName}${File.separator}$fileName")
             val fw = FileWriter(file.absoluteFile)
             val bw = BufferedWriter(fw)
             bw.write(json)
@@ -179,7 +177,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
         backgroundReadFileThread?.join()
         backgroundReadFileThread = Thread(Runnable {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
-            val file = File(context.cacheDir, "${CacheManager.directoryName}${File.separator}$filename")
+            val file = File(context.cacheDir, "${CacheManager.directoryName}${File.separator}$fileName")
             if (file.exists()) {
                 val fr = FileReader(file.absoluteFile)
                 val json = BufferedReader(fr).readLine()
