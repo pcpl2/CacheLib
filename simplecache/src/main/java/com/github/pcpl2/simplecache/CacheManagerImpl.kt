@@ -2,8 +2,8 @@ package com.github.pcpl2.simplecache
 
 import android.os.Process
 import android.content.Context
-import android.util.Log
 import com.github.pcpl2.simplecache.models.CacheEntry
+import com.github.pcpl2.simplecache.models.ValueObject
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import org.joda.time.DateTime
@@ -11,6 +11,8 @@ import org.joda.time.Seconds
 import org.joda.time.format.ISODateTimeFormat
 import java.io.*
 import java.lang.reflect.Type
+import com.google.gson.JsonElement
+
 
 /**
  * Created by patry on 29.01.2018.
@@ -31,15 +33,38 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
         }
     }
 
+    internal class ValueTypeAdapter : JsonDeserializer<ValueObject> {
+        private val gson = GsonBuilder()
+                .registerTypeAdapter(DateTime::class.java, JodaDateTimeTypeAdapter())
+                .create()
+
+        @Throws(JsonParseException::class)
+        override fun deserialize(json: JsonElement, typeOfT: Type,
+                                 context: JsonDeserializationContext): ValueObject {
+            val entries = json.asJsonObject.entrySet()
+            val entryType = entries.find { it.key == "type" }
+                    ?: throw JsonParseException("type field is not exist")
+            val entryValue = entries.find { it.key == "value" }
+                    ?: throw JsonParseException("value field is not exist")
+            val classType = Class.forName(entryType.value.asString)
+            val value = gson.fromJson(entryValue.value, classType)
+
+            return ValueObject(value, entryType.value.asString)
+        }
+
+    }
+
     private var filename = fileName ?: "CacheBase"
 
-    private val gson = GsonBuilder().registerTypeAdapter(DateTime::class.java, JodaDateTimeTypeAdapter()).create()
+    private val gson = GsonBuilder()
+            .registerTypeAdapter(DateTime::class.java, JodaDateTimeTypeAdapter())
+            .registerTypeAdapter(ValueObject::class.java, ValueTypeAdapter())
+            .create()
 
     private val cahceMap: MutableMap<String, CacheEntry> = mutableMapOf()
 
     private var backgroundSaveFileThread: Thread? = null
     private var backgroundReadFileThread: Thread? = null
-
 
     init {
         createDirectory()
@@ -55,9 +80,9 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
      */
     fun set(key: String, value: Any, lifeTime: Long = 0) {
         backgroundSaveFileThread?.join()
-        val cacheEntry = CacheEntry(ts = DateTime.now(), lifeTime = lifeTime, value = value, type = value.javaClass.name)
+        val cacheEntry = CacheEntry(ts = DateTime.now(), lifeTime = lifeTime, value = ValueObject(value = value, type = value.javaClass.name))
         cahceMap[key] = cacheEntry
-        if(autoSave)
+        if (autoSave)
             updateCacheFile()
     }
 
@@ -74,14 +99,15 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
 
         val entry = cahceMap[key]
         if (entry != null) {
-            val classType = Class.forName(entry.type)
-            val valueTyped = classType.cast(entry.value)
+            val classType = Class.forName(entry.value.type)
+            val valueTyped = classType.cast(entry.value.value)
+
             if (checkExpired) {
                 val removed = checkDateOfCache(key = key, entry = entry)
                 if (!removed) {
                     success(valueTyped, classType)
                 } else {
-                    if(error != null) {
+                    if (error != null) {
                         error()
                     }
                 }
@@ -89,7 +115,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
                 success(valueTyped, classType)
             }
         } else {
-            if(error != null) {
+            if (error != null) {
                 error()
             }
         }
@@ -104,7 +130,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
         backgroundReadFileThread?.join()
         if (cahceMap.containsKey(key = key)) {
             cahceMap.remove(key)
-            if(autoSave)
+            if (autoSave)
                 updateCacheFile()
         }
     }
@@ -115,7 +141,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
     fun removeAllElements() {
         backgroundReadFileThread?.join()
         cahceMap.clear()
-        if(autoSave)
+        if (autoSave)
             updateCacheFile()
     }
 
@@ -124,7 +150,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
      */
     fun save() {
         backgroundReadFileThread?.join()
-        if(!autoSave)
+        if (!autoSave)
             updateCacheFile()
     }
 
@@ -136,7 +162,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
         backgroundSaveFileThread = Thread(Runnable {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
             val json = gson.toJson(cahceMap.toMap())
-            Log.d("SaveJson", json)
+            //Log.d("SaveJson", json)
             val file = File(context.cacheDir, "${CacheManager.directoryName}${File.separator}$filename")
             val fw = FileWriter(file.absoluteFile)
             val bw = BufferedWriter(fw)
@@ -160,9 +186,9 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
                 fr.close()
                 if (!json.isNullOrEmpty()) {
                     val cacheEntryType = object : TypeToken<Map<String, CacheEntry>>() {}.type
-                    val obj = gson.fromJson<Map<String, CacheEntry>>(json, cacheEntryType)
+                    val objs = gson.fromJson<Map<String, CacheEntry>>(json, cacheEntryType)
                     cahceMap.clear()
-                    cahceMap.putAll(obj)
+                    cahceMap.putAll(objs)
                 }
             }
         })
@@ -184,7 +210,7 @@ class CacheManagerImpl(private val context: Context, fileName: String?, private 
             val hours = Seconds.secondsBetween(entry.ts, DateTime.now())
             if (hours.seconds >= entry.lifeTime) {
                 cahceMap.remove(key)
-                if(autoSave)
+                if (autoSave)
                     updateCacheFile()
                 true
             } else {
