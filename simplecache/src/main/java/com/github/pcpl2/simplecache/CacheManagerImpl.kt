@@ -51,7 +51,6 @@ class CacheManagerImpl(private val context: Context, private val fileName: Strin
 
             return ValueObject(value, entryType.value.asString)
         }
-
     }
 
     private val gson = GsonBuilder()
@@ -224,5 +223,23 @@ class CacheManagerImpl(private val context: Context, private val fileName: Strin
      */
     private fun createDirectory() {
         File(context.cacheDir, CacheManager.directoryName).mkdirs()
+    }
+
+    /**
+     * Close instance and save save cache data.
+     *
+     * @param save is true the data will be saved. Default is true
+     */
+    fun dispose(save: Boolean = true) {
+        backgroundReadFileThread?.join()
+        backgroundSaveFileThread?.join()
+        if(save) {
+            save()
+            backgroundSaveFileThread?.join()
+        }
+
+        backgroundReadFileThread = null
+        backgroundSaveFileThread = null
+        cacheMap.clear()
     }
 }

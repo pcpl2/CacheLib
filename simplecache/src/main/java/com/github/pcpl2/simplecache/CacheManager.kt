@@ -61,15 +61,25 @@ object CacheManager {
      * Remove global instance.
      *
      * @param instanceName Name of instance.
+     * @param save Save data of instance before remove. Default is true
      */
-    fun removeGlobalInstance(instanceName: String) {
-        instancesActive.remove(instanceName)
+    fun removeGlobalInstance(instanceName: String, save: Boolean = true) {
+        val instance = instancesActive[instanceName]
+        if(instance != null) {
+            instance.dispose(save)
+            instancesActive.remove(instanceName)
+        }
     }
 
     /**
      * Remove all active global instances.
+     *
+     * @param save Save data of instances before remove. Default is true
      */
-    fun removeAllGlobalInstances() {
+    fun removeAllGlobalInstances(save: Boolean = true) {
+        for (instanceActive in instancesActive) {
+            instanceActive.value.dispose(save)
+        }
         instancesActive.clear()
     }
 

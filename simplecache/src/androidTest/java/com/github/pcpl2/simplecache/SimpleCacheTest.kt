@@ -25,8 +25,6 @@ class SimpleCacheTest {
     @Test
     @Throws(Exception::class)
     fun cacheWithAutoSaveTest() {
-
-
         val cacheManager = CacheManager.createInstance(context = appContext)
 
         cacheManager.set("String", "Hello World")
@@ -97,6 +95,7 @@ class SimpleCacheTest {
     }
 
     @Test
+    @Throws(Exception::class)
     fun cacheWithoutAutoSaveTest() {
         val cacheManager = CacheManager.createInstance(appContext, "NoAutoSave", false)
 
