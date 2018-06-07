@@ -1,8 +1,8 @@
 # SimpleCache 
 [![Build Status](https://travis-ci.org/pcpl2/CacheLib.svg?branch=master)](https://travis-ci.org/pcpl2/CacheLib) 
 [![SimpleCache](https://api.bintray.com/packages/pcpl2/maven/simplecache/images/download.svg) ](https://bintray.com/pcpl2/maven/simplecache/_latestVersion)
-[![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=plastic)](https://android-arsenal.com/api?level=21)
 [![License](https://img.shields.io/:license-apache-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![API](https://img.shields.io/badge/API-14%2B-green.svg?style=flat)](https://android-arsenal.com/api?level=21)
 [![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-simplecache-green.svg?style=flat )]( https://android-arsenal.com/details/1/6965 )
 
 A simple library for saving data in the cache and reading them.
@@ -12,7 +12,7 @@ The library is hosted on jcenter. To use it, add the following to your module le
 
 ```gradle
 dependencies {
-    implementation 'com.github.pcpl2:simplecache:1.1.0'
+    implementation 'com.github.pcpl2:simplecache:1.2.0'
 }
 ```
 
@@ -21,17 +21,22 @@ dependencies {
 **To init instance of cache manager without filename:**
 
 ```kotlin
-val cacheManager = CacheManager.createInstance(appContext, null) 
+val cacheManager = CacheManager.createInstance(context = appContext)
 ```
 The `cacheManager` instance usage default cache file.
 
 **To init instance of cache manager with filename:**
 
 ```kotlin
-val cacheManager = CacheManager.createInstance(appContext, "filesCache")
+val cacheManager = CacheManager.createInstance(context = appContext, fileName = "filesCache")
 ```
 The `cacheManager` instance usage cache with file name `filesCache`.
 
+**To init instance of cache manager without autosave:**
+```kotlin
+val cacheManager = CacheManager.createInstance(context = appContext, autoSave = false)
+```
+If you have deactivated the automatic saving, you must remember to save the data using the `save` method.
 
 ## Add or update elements to cache: 
 The `set` function accepts 3 parameters: `key: Stirng, value: Any, lifetime: Long`.
@@ -54,6 +59,12 @@ cacheManager.set("HelloWorldKey", "Hello World")
 cacheManager.set("IntValueKey", 255)
 cacheManager.set("BooleanKey", false)
 cacheManager.set("FloatKey", 5.55)
+```
+## Save cache data 
+**To save cache on disk (if autosave disabled):**
+
+```kotlin
+cacheManager.save()
 ```
 
 ## Getting element from cache: 
@@ -116,13 +127,13 @@ cacheManager.get(key = "FloatKey", checkExpired = false, success = { value, type
 ## Remove element from cache
 The `remove` function accept 1 parameter: `key: Stirng`.
 
-
 **To remove element from cache instance:**
 ```kotlin
 cacheManager.remove("FloatKey")
 ```
 
 ## Clear cache instance
+
 The `removeAllElements` function cleans the entire cache.
 
 **To clear cache istance:**
@@ -131,6 +142,16 @@ The `removeAllElements` function cleans the entire cache.
 cacheManager.removeAllElements()
 ```
 
+**To remove all elements in cache istance:**
+
+```kotlin
+cacheManager.removeAllElements()
+```
+
+The `dispose` function accept 1 parameter: `save: Boolean = true`.
+
+The save parameter is optional, default set as true.
+
 ## List of the cache files.
 The `getListOfCacheFiles` function accept 1 parameter: `ctx: Context` and return list of exist cache files.
 
@@ -138,6 +159,49 @@ The `getListOfCacheFiles` function accept 1 parameter: `ctx: Context` and return
 
 ```kotlin
 CacheManager.getListOfCacheFiles(appContext)
+```
+
+# Global instances
+
+## Create global instacne 
+The `createGlobalInstance` function accept 4 parameters: `context: Context, instanceName: String, fileName: String = "CacheBase", autoSave: Boolean = true` and return cache instance.
+
+**To create global instance:**
+
+```kotlin
+CacheManager.createGlobalInstance(context = appContext, instanceName = "Instance1", fileName = "instanceFile1")
+```
+
+## Get global instacne 
+The `getGlobalInstance` function accept 1 parameter: `instanceName: String` and return cache instance.
+
+**To get global instance by name:**
+
+```kotlin
+val globalInstance2 = CacheManager.getGlobalInstance(instanceName = "Instance1")
+```
+
+**To get list of global instance names:**
+
+```kotlin
+var listOfIInstancesNames = CacheManager.getListOfGlobalInstanceNames()
+```
+
+## Remove global instance
+The `removeGlobalInstance` function accept 2 parameters: `instanceName: String, save: Boolean = true`.
+
+The save parameter is optional, default set as true.
+
+**To remove global instance by name:**
+
+```kotlin
+val globalInstance2 = CacheManager.removeGlobalInstance(instanceName = "Instance1")
+```
+
+**To remove all global instances:**
+
+```kotlin
+val globalInstance2 = CacheManager.removeAllGlobalInstances()
 ```
 
 # Changelog

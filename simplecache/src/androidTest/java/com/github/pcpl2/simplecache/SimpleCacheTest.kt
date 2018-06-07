@@ -19,13 +19,13 @@ import org.junit.Assert.*
  */
 @RunWith(AndroidJUnit4::class)
 class SimpleCacheTest {
+
+    private val appContext = InstrumentationRegistry.getTargetContext()!!
+
     @Test
     @Throws(Exception::class)
-    fun simpleCacheTest() {
-
-        val appContext = InstrumentationRegistry.getTargetContext()
-
-        val cacheManager = CacheManager.createInstance(appContext, null)
+    fun cacheWithAutoSaveTest() {
+        val cacheManager = CacheManager.createInstance(context = appContext)
 
         cacheManager.set("String", "Hello World")
         cacheManager.set("Int", 255)
@@ -34,7 +34,7 @@ class SimpleCacheTest {
         val testMap = HashMap<String, String>()
         testMap["testKey"] = "TestValue"
         cacheManager.set("map", testMap)
-        val testObject = TestObject(69, "abababa", false, 6.66f, testMap)
+        val testObject = TestObject(69, "Test String", false, 6.66f, testMap)
         cacheManager.set("obj", testObject)
         val testObject2 = TestObject(885, "Testing two!", true, 3.14f, testMap)
 
@@ -91,8 +91,120 @@ class SimpleCacheTest {
             assert(true)
         })
 
-        Log.d("simpleCacheTest", CacheManager.getListOfCacheFiles(appContext).toString())
+        cacheManager.removeAllElements()
+    }
 
-        assertEquals("com.github.pcpl2.simplecache.test", appContext.packageName)
+    @Test
+    @Throws(Exception::class)
+    fun cacheWithoutAutoSaveTest() {
+        val cacheManager = CacheManager.createInstance(context = appContext, fileName = "NoAutoSave", autoSave = false)
+
+        cacheManager.set("String", "Hello World")
+        cacheManager.set("Int", 255)
+        cacheManager.set("Bool", false)
+        cacheManager.set("float", 5.55)
+        val testMap = HashMap<String, String>()
+        testMap["testKey"] = "TestValue"
+        cacheManager.set("map", testMap)
+        val testObject = TestObject(69, "Test String", false, 6.66f, testMap)
+        cacheManager.set("obj", testObject)
+        val testObject2 = TestObject(885, "Testing two!", true, 3.14f, testMap)
+
+        cacheManager.set("obj2", testObject2)
+
+        cacheManager.save()
+
+        cacheManager.get(key = "String", success = { value, type ->
+            assertEquals("Hello World", value)
+            assert(type.isInstance(String::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "Int", checkExpired = true, success = { value, type ->
+            assertEquals(255, value)
+            assert(type.isInstance(Int::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "Bool", success = { value, type ->
+            assertEquals(false, value)
+            assert(type.isInstance(Boolean::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "float", success = { value, type ->
+            assertEquals(5.55, value)
+            assert(type.isInstance(Float::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "map", success = { value, type ->
+            assertEquals(testMap, value)
+            assert(type.isInstance(HashMap::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "obj", success = { value, type ->
+            assertEquals(testObject, value)
+            assert(type.isInstance(TestObject::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.get(key = "obj2", success = { value, type ->
+            assertEquals(testObject2, value)
+            assert(type.isInstance(TestObject::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.remove("obj2")
+
+        cacheManager.get(key = "obj2", success = { _,  _ ->
+
+        }, error = {
+            Log.d("simpleCacheTest", "obj2 is not exist.")
+            assert(true)
+        })
+
+        cacheManager.removeAllElements()
+    }
+
+    @Test
+    fun cacheListFilesTest() {
+        val files = CacheManager.getListOfCacheFiles(appContext)
+        Log.d("simpleCacheTest",files.toString())
+
+        assert(files.size == 2)
+    }
+
+    @Test
+    fun globalInstancesTest() {
+        val instanceName1 = "Instance1"
+        val instanceName2 = "Instance2"
+
+        val instance1 = CacheManager.createGlobalInstance(context = appContext, instanceName = instanceName1, fileName = "instanceFile1")
+        val instance2 = CacheManager.createGlobalInstance(context = appContext, instanceName = instanceName2, fileName = "InstanceFile2")
+
+        val globalInstance1 = CacheManager.getGlobalInstance(instanceName1)
+        val globalInstance2 = CacheManager.getGlobalInstance(instanceName2)
+
+        assert(instance1 == globalInstance1)
+        assert(instance1 != globalInstance2)
+        assert(instance2 == globalInstance2)
+
+        var listOfIInstancesNames = CacheManager.getListOfGlobalInstanceNames()
+
+        assert(listOfIInstancesNames.contains(instanceName2))
+
+        CacheManager.removeGlobalInstance(instanceName1)
+
+        listOfIInstancesNames = CacheManager.getListOfGlobalInstanceNames()
+
+        assert(!listOfIInstancesNames.contains(instanceName1))
+
+        CacheManager.removeAllGlobalInstances()
+
+        listOfIInstancesNames = CacheManager.getListOfGlobalInstanceNames()
+
+        assert(listOfIInstancesNames.isEmpty())
     }
 }
