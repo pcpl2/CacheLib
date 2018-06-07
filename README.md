@@ -163,7 +163,7 @@ CacheManager.getListOfCacheFiles(appContext)
 
 # Global instances
 
-## Create global instacne 
+## Create global instance 
 The `createGlobalInstance` function accept 4 parameters: `context: Context, instanceName: String, fileName: String = "CacheBase", autoSave: Boolean = true` and return cache instance.
 
 **To create global instance:**
@@ -172,7 +172,7 @@ The `createGlobalInstance` function accept 4 parameters: `context: Context, inst
 CacheManager.createGlobalInstance(context = appContext, instanceName = "Instance1", fileName = "instanceFile1")
 ```
 
-## Get global instacne 
+## Get global instance 
 The `getGlobalInstance` function accept 1 parameter: `instanceName: String` and return cache instance.
 
 **To get global instance by name:**
