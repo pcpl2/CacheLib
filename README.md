@@ -12,7 +12,7 @@ The library is hosted on jcenter. To use it, add the following to your module le
 
 ```gradle
 dependencies {
-    implementation 'com.github.pcpl2:simplecache:1.1.0'
+    implementation 'com.github.pcpl2:simplecache:1.2.0'
 }
 ```
 
