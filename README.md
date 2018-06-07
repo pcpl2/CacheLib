@@ -127,13 +127,13 @@ cacheManager.get(key = "FloatKey", checkExpired = false, success = { value, type
 ## Remove element from cache
 The `remove` function accept 1 parameter: `key: Stirng`.
 
-
 **To remove element from cache instance:**
 ```kotlin
 cacheManager.remove("FloatKey")
 ```
 
 ## Clear cache instance
+
 The `removeAllElements` function cleans the entire cache.
 
 **To clear cache istance:**
@@ -142,6 +142,16 @@ The `removeAllElements` function cleans the entire cache.
 cacheManager.removeAllElements()
 ```
 
+**To remove all elements in cache istance:**
+
+```kotlin
+cacheManager.removeAllElements()
+```
+
+The `dispose` function accept 1 parameter: `save: Boolean = true`.
+
+The save parameter is optional, default set as true.
+
 ## List of the cache files.
 The `getListOfCacheFiles` function accept 1 parameter: `ctx: Context` and return list of exist cache files.
 
@@ -149,6 +159,49 @@ The `getListOfCacheFiles` function accept 1 parameter: `ctx: Context` and return
 
 ```kotlin
 CacheManager.getListOfCacheFiles(appContext)
+```
+
+# Global instances
+
+## Create global instacne 
+The `createGlobalInstance` function accept 4 parameters: `context: Context, instanceName: String, fileName: String = "CacheBase", autoSave: Boolean = true` and return cache instance.
+
+**To create global instance:**
+
+```kotlin
+CacheManager.createGlobalInstance(context = appContext, instanceName = "Instance1", fileName = "instanceFile1")
+```
+
+## Get global instacne 
+The `getGlobalInstance` function accept 1 parameter: `instanceName: String` and return cache instance.
+
+**To get global instance by name:**
+
+```kotlin
+val globalInstance2 = CacheManager.getGlobalInstance(instanceName = "Instance1")
+```
+
+**To get list of global instance names:**
+
+```kotlin
+var listOfIInstancesNames = CacheManager.getListOfGlobalInstanceNames()
+```
+
+## Remove global instance
+The `removeGlobalInstance` function accept 2 parameters: `instanceName: String, save: Boolean = true`.
+
+The save parameter is optional, default set as true.
+
+**To remove global instance by name:**
+
+```kotlin
+val globalInstance2 = CacheManager.removeGlobalInstance(instanceName = "Instance1")
+```
+
+**To remove all global instances:**
+
+```kotlin
+val globalInstance2 = CacheManager.removeAllGlobalInstances()
 ```
 
 # Changelog
