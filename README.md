@@ -195,13 +195,13 @@ The save parameter is optional, default set as true.
 **To remove global instance by name:**
 
 ```kotlin
-val globalInstance2 = CacheManager.removeGlobalInstance(instanceName = "Instance1")
+CacheManager.removeGlobalInstance(instanceName = "Instance1")
 ```
 
 **To remove all global instances:**
 
 ```kotlin
-val globalInstance2 = CacheManager.removeAllGlobalInstances()
+CacheManager.removeAllGlobalInstances()
 ```
 
 # Changelog
