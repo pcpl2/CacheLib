@@ -163,7 +163,7 @@ CacheManager.getListOfCacheFiles(appContext)
 
 # Global instances
 
-## Create global instacne 
+## Create global instance 
 The `createGlobalInstance` function accept 4 parameters: `context: Context, instanceName: String, fileName: String = "CacheBase", autoSave: Boolean = true` and return cache instance.
 
 **To create global instance:**
@@ -172,7 +172,7 @@ The `createGlobalInstance` function accept 4 parameters: `context: Context, inst
 CacheManager.createGlobalInstance(context = appContext, instanceName = "Instance1", fileName = "instanceFile1")
 ```
 
-## Get global instacne 
+## Get global instance 
 The `getGlobalInstance` function accept 1 parameter: `instanceName: String` and return cache instance.
 
 **To get global instance by name:**
@@ -195,13 +195,13 @@ The save parameter is optional, default set as true.
 **To remove global instance by name:**
 
 ```kotlin
-val globalInstance2 = CacheManager.removeGlobalInstance(instanceName = "Instance1")
+CacheManager.removeGlobalInstance(instanceName = "Instance1")
 ```
 
 **To remove all global instances:**
 
 ```kotlin
-val globalInstance2 = CacheManager.removeAllGlobalInstances()
+CacheManager.removeAllGlobalInstances()
 ```
 
 # Changelog
