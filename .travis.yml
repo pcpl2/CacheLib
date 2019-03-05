@@ -5,22 +5,23 @@ jdk: oraclejdk8
 
 env:
  matrix:
-  - ANDROID_BUILD_TOOLS_VERSION=27.0.3 ANDROID_API_LEVEL=27
+  - ANDROID_BUILD_TOOLS_VERSION=28.0.3 ANDROID_API_LEVEL=28
 android:
   components:
-    - platform-tools
-    - tools
     - android-$ANDROID_API_LEVEL
     - build-tools-$ANDROID_BUILD_TOOLS_VERSION
     - extra-android-m2repository
-    - extra-android-support
+
+  licenses:
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
 
 script:
   - ./gradlew clean build --stacktrace
 
 before_install:
   - chmod +x gradlew
-  - yes | sdkmanager "platforms;android-27"
+  - yes | sdkmanager "platforms;android-${ANDROID_API_LEVEL}"
 
 install:
   - echo yes | ${ANDROID_HOME}/tools/bin/sdkmanager "platforms;android-${ANDROID_API_LEVEL}"
