@@ -99,17 +99,23 @@ class CacheManagerImpl(private val context: Context, private val fileName: Strin
             val classType = Class.forName(entry.value.type)
             val valueTyped = classType.cast(entry.value.value)
 
-            if (checkExpired) {
-                val removed = checkDateOfCache(key = key, entry = entry)
-                if (!removed) {
-                    success(valueTyped, classType)
-                } else {
-                    if (error != null) {
-                        error()
+            if (valueTyped != null) {
+                if (checkExpired) {
+                    val removed = checkDateOfCache(key = key, entry = entry)
+                    if (!removed) {
+                        success(valueTyped, classType)
+                    } else {
+                        if (error != null) {
+                            error()
+                        }
                     }
+                } else {
+                    success(valueTyped, classType)
                 }
             } else {
-                success(valueTyped, classType)
+                if (error != null) {
+                    error()
+                }
             }
         } else {
             if (error != null) {
@@ -233,7 +239,7 @@ class CacheManagerImpl(private val context: Context, private val fileName: Strin
     fun dispose(save: Boolean = true) {
         backgroundReadFileThread?.join()
         backgroundSaveFileThread?.join()
-        if(save) {
+        if (save) {
             save()
             backgroundSaveFileThread?.join()
         }
