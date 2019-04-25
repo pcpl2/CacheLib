@@ -52,8 +52,6 @@ ext {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
     implementation 'joda-time:joda-time:2.9.9'
     implementation 'com.google.code.gson:gson:2.8.5'
 
