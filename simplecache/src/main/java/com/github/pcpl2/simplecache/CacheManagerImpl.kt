@@ -2,6 +2,7 @@ package com.github.pcpl2.simplecache
 
 import android.os.Process
 import android.content.Context
+import android.util.Log
 import com.github.pcpl2.simplecache.models.CacheEntry
 import com.github.pcpl2.simplecache.models.ValueObject
 import com.google.gson.*
