@@ -13,6 +13,9 @@ import java.io.*
 import java.lang.reflect.Type
 import com.google.gson.JsonElement
 
+import kotlinx.coroutines.*
+import kotlin.system.*
+
 
 /**
  * Created by patry on 29.01.2018.
@@ -63,6 +66,8 @@ class CacheManagerImpl(private val context: Context, private val fileName: Strin
     private var backgroundSaveFileThread: Thread? = null
     private var backgroundReadFileThread: Thread? = null
 
+    private var setAsyncThread: Deferred<Unit>? = null
+
     init {
         createDirectory()
         readCacheFile()
@@ -76,6 +81,28 @@ class CacheManagerImpl(private val context: Context, private val fileName: Strin
      * @param lifeTime Element lifetime in cache (given in seconds). If it is zero then there is no life time.
      */
     fun set(key: String, value: Any, lifeTime: Long = 0) {
+        settingFunction(key, value, lifeTime)
+    }
+
+    /**
+     * Add or update asynchronously element in cache.
+     *
+     * @param key The key under which the added element will be available.
+     * @param value Element that is added. can be of any type.
+     * @param lifeTime Element lifetime in cache (given in seconds). If it is zero then there is no life time.
+     */
+    fun setAsync(key: String, value: Any, lifeTime: Long = 0) {
+        runBlocking {
+            if (setAsyncThread != null)
+                setAsyncThread?.await()
+
+            setAsyncThread = async { settingFunction(key, value, lifeTime) }
+            setAsyncThread?.await()
+            setAsyncThread = null
+        }
+    }
+
+    private fun settingFunction(key: String, value: Any, lifeTime: Long) {
         backgroundSaveFileThread?.join()
         val cacheEntry = CacheEntry(ts = DateTime.now(), lifeTime = lifeTime, value = ValueObject(value = value, type = value.javaClass.name))
         cacheMap[key] = cacheEntry
@@ -92,8 +119,27 @@ class CacheManagerImpl(private val context: Context, private val fileName: Strin
      * @param error Callback running if element with key not exist in map or lifetime of element is end.
      */
     fun get(key: String, checkExpired: Boolean = true, success: (value: Any, type: Class<*>) -> Unit, error: (() -> Unit)? = null) {
-        backgroundReadFileThread?.join()
+        gettingFunction(key, checkExpired, success, error)
+    }
 
+    /**
+     * Getting asynchronously element form cache if exist.
+     *
+     * @param key The key under which the cache element was saved.
+     * @param checkExpired Checking if the lifetime of the element has been exceeded.
+     * @param success Callback returning element and element type from cache. If it does not exist, the element and type returned are null.
+     * @param error Callback running if element with key not exist in map or lifetime of element is end.
+     */
+    fun getAsync(key: String, checkExpired: Boolean = true, success: (value: Any, type: Class<*>) -> Unit, error: (() -> Unit)? = null) {
+        runBlocking {
+            if (setAsyncThread != null)
+                setAsyncThread?.await()
+            gettingFunction(key, checkExpired, success, error)
+        }
+    }
+
+    private fun gettingFunction(key: String, checkExpired: Boolean, success: (value: Any, type: Class<*>) -> Unit, error: (() -> Unit)?) {
+        backgroundReadFileThread?.join()
         val entry = cacheMap[key]
         if (entry != null) {
             val classType = Class.forName(entry.value.type)
@@ -104,9 +150,12 @@ class CacheManagerImpl(private val context: Context, private val fileName: Strin
                     val removed = checkDateOfCache(key = key, entry = entry)
                     if (!removed) {
                         success(valueTyped, classType)
+                        return
                     } else {
+                        //TODO Remove from memory
                         if (error != null) {
                             error()
+                            return
                         }
                     }
                 } else {
@@ -115,11 +164,13 @@ class CacheManagerImpl(private val context: Context, private val fileName: Strin
             } else {
                 if (error != null) {
                     error()
+                    return
                 }
             }
         } else {
             if (error != null) {
                 error()
+                return
             }
         }
     }

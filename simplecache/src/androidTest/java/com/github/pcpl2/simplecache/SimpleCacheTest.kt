@@ -169,6 +169,78 @@ class SimpleCacheTest {
     }
 
     @Test
+    @Throws(Exception::class)
+    fun cacheWithAutoSaveAsyncTest() {
+        val cacheManager = CacheManager.createInstance(context = appContext, fileName = "autoSAveAsync")
+
+        cacheManager.setAsync("String", "Hello World")
+        cacheManager.setAsync("Int", 255)
+        cacheManager.setAsync("Bool", false)
+        cacheManager.setAsync("float", 5.55)
+        val testMap = HashMap<String, String>()
+        testMap["testKey"] = "TestValue"
+        cacheManager.setAsync("map", testMap)
+        val testObject = TestObject(69, "Test String", false, 6.66f, testMap)
+        cacheManager.setAsync("obj", testObject)
+        val testObject2 = TestObject(885, "Testing two!", true, 3.14f, testMap)
+
+        cacheManager.setAsync("obj2", testObject2)
+
+        cacheManager.getAsync(key = "String", success = { value, type ->
+            assertEquals("Hello World", value)
+            assert(type.isInstance(String::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.getAsync(key = "Int", checkExpired = true, success = { value, type ->
+            assertEquals(255, value)
+            assert(type.isInstance(Int::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.getAsync(key = "Bool", success = { value, type ->
+            assertEquals(false, value)
+            assert(type.isInstance(Boolean::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.getAsync(key = "float", success = { value, type ->
+            assertEquals(5.55, value)
+            assert(type.isInstance(Float::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.getAsync(key = "map", success = { value, type ->
+            assertEquals(testMap, value)
+            assert(type.isInstance(HashMap::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.getAsync(key = "obj", success = { value, type ->
+            assertEquals(testObject, value)
+            assert(type.isInstance(TestObject::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.getAsync(key = "obj2", success = { value, type ->
+            assertEquals(testObject2, value)
+            assert(type.isInstance(TestObject::class))
+            Log.d("simpleCacheTest", value.toString())
+        })
+
+        cacheManager.remove("obj2")
+
+        cacheManager.getAsync(key = "obj2", success = { _,  _ ->
+
+        }, error = {
+            Log.d("simpleCacheTest", "obj2 is not exist.")
+            assert(true)
+        })
+
+        cacheManager.removeAllElements()
+    }
+
+    @Test
     fun cacheListFilesTest() {
         val files = CacheManager.getListOfCacheFiles(appContext)
         Log.d("simpleCacheTest",files.toString())
