@@ -56,8 +56,8 @@ ext {
 }
 
 dependencies {
-    implementation 'joda-time:joda-time:2.9.9'
-    implementation 'com.google.code.gson:gson:2.8.5'
+    api 'joda-time:joda-time:2.10.3'
+    api 'com.google.code.gson:gson:2.8.5'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
